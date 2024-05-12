@@ -1,0 +1,161 @@
+*,
+*::before,
+*::after{
+    box-sizing: border-box;
+  
+}
+
+
+
+
+
+:root{
+    
+    --clr-text: #030104;
+    --clr-text-lessopacity: #62645B;
+
+    --clr-nav-bar-color: #62645B;
+    --clr-background-color: #292D32;
+
+    --clr-primary-color: #01BCD6;
+    --clr-button-color: #6C70DC;
+    
+    --clr-light: #FFF;
+    --clr-dark: #000;
+
+
+    --fw-light: 300;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+
+    
+
+
+    
+
+}
+
+
+body {
+  
+    display: flex;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+
+
+  
+
+
+
+
+
+}
+
+
+.main--content {
+    height: 100vh;
+    width: 100%;
+    padding: 40px 200px;
+
+}
+
+
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+}
+
+
+.header p {
+    color: #424242;
+  
+    font-weight: var(--fw-medium);
+}
+
+.header span {
+    
+    font-weight: var(--fw-medium);
+    color: var(--clr-primary-color);
+}
+
+
+.appointment-details {
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+ 
+    gap: 24px;
+
+}
+
+.box {
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    height: 100px;
+    border: 1px solid #ccc ;
+    padding: 24px;
+
+    
+}
+
+.box  span {
+    font-size: 20px;
+    font-weight: var(--fw-semibold);
+}
+
+form {
+    margin-top: 24px;
+
+    height: auto;
+    display: flex;
+    flex-direction: column;
+
+
+}
+
+
+form textarea {
+    padding: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: var(--fw-regular);
+    font-size: 1rem;
+}
+
+
+.button-prescribe {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+.submit {
+
+    margin-top: 24px;
+    
+    cursor: pointer;
+
+    padding: 8px 16px;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    border: 1px solid var(--clr-button-color);
+    background:var(--clr-button-color);
+
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-weight: var(--fw-regular);
+    font-size: 1rem;
+}
+
