@@ -117,7 +117,7 @@ function sendVerificationEmail($username, $token, $first_name)
 
   //  $verificationLink = 'http://localhost/dashboard/Capstone_PhpFiles/Capstone/session/verify.php?token=' . $token;
 
-    $verificationLink = 'https://mediflowhub.online/session/verify.php?token=' . $token;
+    $verificationLink = 'https://mediflow.website/session/verify.php?token=' . $token;
     $mail->Body = 'Hi' . " " . $first_name . ',' . "\n" . "\n" . 
     'We just need to verify your email address before you can access our website.' . "\n" .  "\n" . 
     'To verify your email, please click this link: (' . $verificationLink . ').' . "\n" .  "\n" . 
