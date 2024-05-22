@@ -30,6 +30,6 @@ function customExceptionHandler($exception) {
 set_exception_handler('customExceptionHandler');
 
 // Example to trigger an error and exception
- trigger_error("This is a test error", E_USER_NOTICE);
- throw new Exception("This is a test exception");
+// trigger_error("This is a test error", E_USER_NOTICE);
+// throw new Exception("This is a test exception");
 ?>

@@ -171,12 +171,19 @@ $totalAppointments = $rowAppointments['total_appointments'];
                 </a>
                 </li>
 
+                <li>
+                <a href="eventlogs.php">
+                    <i class='bx bxs-data'></i>
+                    <span>Event Logs</span>
+                </a>
+                </li>
+
+
 
 
 
                 
-            
-          
+    
 
                 <li class="logout">
                     <a href="logout.php" id="logout-link">
