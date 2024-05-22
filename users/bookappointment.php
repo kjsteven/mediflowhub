@@ -78,7 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if ($stmt->execute()) {
 
                 $eventLogger = new EventLogger();
-                $eventLogger->logLoginEvent($_SESSION["user_id"]);
+
+                // Log the appointment creation event
+                $eventLogger->logAppointmentCreation($_SESSION['user_id'], $appointmentId);
 
 
                 // Set the success message
