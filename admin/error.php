@@ -1,6 +1,6 @@
 <?php
 // Include database configuration
-require 'config.php'; // Assuming you have a config.php file for DB credentials
+require '../config/config.php';
 
 // Function to fetch error logs from the database
 function fetchErrorLogs($pdo) {
