@@ -164,6 +164,14 @@ $totalAppointments = $rowAppointments['total_appointments'];
                 </li>
 
 
+                <li>
+                <a href="backup.php">
+                    <i class='bx bxs-data'></i>
+                    <span>Error Logs</span>
+                </a>
+                </li>
+
+
 
 
                 
