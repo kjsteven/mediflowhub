@@ -1,6 +1,6 @@
 <?php
-require 'config.php';
-require 'ErrorLogger.php';
+require '../config/databaseconfig.php';
+require '../admin/ErrorLogger.php';
 
 // Initialize the ErrorLogger
 $errorLogger = new ErrorLogger($host, $db, $user, $pass);
