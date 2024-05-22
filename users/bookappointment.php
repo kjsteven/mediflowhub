@@ -5,10 +5,6 @@ require_once '../session/session_manager.php';
 require '../admin/EventLogger.php'; 
 
 
-
-$eventLogger = new EventLogger();
-$eventLogger->logAppointmentEvent($userId, $date, $timeSlot, $doctorId, $patientId);
-
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -80,6 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Execute the statement
             if ($stmt->execute()) {
+
+                $eventLogger = new EventLogger();
+                $eventLogger->logLoginEvent($_SESSION["user_id"]);
+
 
                 // Set the success message
                 $_SESSION['successMessage'] = "Appointment added successfully!";
