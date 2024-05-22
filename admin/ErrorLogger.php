@@ -1,16 +1,20 @@
 <?php
+
 class ErrorLogger {
     private $pdo;
 
-    public function __construct($host, $db, $user, $pass) {
-        $dsn = "mysql:host=$host;dbname=$db;charset=utf8";
+    public function __construct() {
+        // Include database configuration
+        require 'databaseconfig.php';
+
+        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_DATABASE . ";charset=utf8";
         $options = [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
         try {
-            $this->pdo = new PDO($dsn, $user, $pass, $options);
+            $this->pdo = new PDO($dsn, DB_USER, DB_PASSWORD, $options);
         } catch (PDOException $e) {
             throw new RuntimeException($e->getMessage(), (int)$e->getCode());
         }
@@ -26,3 +30,4 @@ class ErrorLogger {
         ]);
     }
 }
+?>

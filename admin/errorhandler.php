@@ -1,9 +1,8 @@
 <?php
-require '../config/databaseconfig.php';
 require '../admin/ErrorLogger.php';
 
 // Initialize the ErrorLogger
-$errorLogger = new ErrorLogger($host, $db, $user, $pass);
+$errorLogger = new ErrorLogger();
 
 // Custom error handler
 function customErrorHandler($errno, $errstr, $errfile, $errline) {
@@ -29,3 +28,4 @@ set_exception_handler('customExceptionHandler');
 // Example to trigger an error and exception
 // trigger_error("This is a test error", E_USER_NOTICE);
 // throw new Exception("This is a test exception");
+?>
