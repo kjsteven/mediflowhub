@@ -118,11 +118,11 @@ $username = $_SESSION["username"];
                 </li>
 
                 <li>
-    <a href="https://www.facebook.com/kjsteven09" target="_blank">
-        <i class='bx bxs-chat'></i>
-        <span>Chat Support</span>
-    </a>
-</li>
+                   <a href="https://www.facebook.com/kjsteven09" target="_blank">
+                   <i class='bx bxs-chat'></i>
+                   <span>Chat Support</span>
+                   </a>
+                </li>
 
                 <li>
                     <a href="Profile.php">
