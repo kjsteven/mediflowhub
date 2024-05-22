@@ -174,7 +174,7 @@ $totalAppointments = $rowAppointments['total_appointments'];
                 <li>
                 <a href="eventlogs.php">
                     <i class='bx bxs-data'></i>
-                    <span>Event Logs</span>
+                    <span>User Logs</span>
                 </a>
                 </li>
 
