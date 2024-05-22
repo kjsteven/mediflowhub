@@ -5,7 +5,7 @@ class ErrorLogger {
 
     public function __construct() {
         // Include database configuration
-        require 'databaseconfig.php';
+        require '../config/databaseconfig.php';
 
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_DATABASE . ";charset=utf8";
         $options = [
