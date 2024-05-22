@@ -19,13 +19,31 @@ class EventLogger {
         }
     }
 
-    public function logEvent($eventName, $eventDescription = '', $eventUser = '') {
-        $sql = "INSERT INTO event_logs (event_name, event_description, event_user) VALUES (:event_name, :event_description, :event_user)";
+    public function logLoginEvent($userId) {
+        $eventName = "User Login";
+        $eventDescription = "User with ID $userId logged in";
+        $this->logEvent($eventName, $eventDescription, $userId);
+    }
+
+    public function logLogoutEvent($userId) {
+        $eventName = "User Logout";
+        $eventDescription = "User with ID $userId logged out";
+        $this->logEvent($eventName, $eventDescription, $userId);
+    }
+
+    public function logAppointmentCreation($userId, $appointmentId) {
+        $eventName = "Appointment Creation";
+        $eventDescription = "User with ID $userId created appointment ID: $appointmentId";
+        $this->logEvent($eventName, $eventDescription, $userId);
+    }
+
+    private function logEvent($eventName, $eventDescription, $userId = null) {
+        $sql = "INSERT INTO event_logs (event_name, event_description, user_id) VALUES (:event_name, :event_description, :user_id)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'event_name' => $eventName,
             'event_description' => $eventDescription,
-            'event_user' => $eventUser
+            'user_id' => $userId
         ]);
     }
 }

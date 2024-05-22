@@ -6,7 +6,7 @@ require '../config/databaseconfig.php';
 
 // Function to fetch event logs from the database
 function fetchEventLogs($pdo) {
-    $sql = "SELECT * FROM event_logs ORDER BY event_timestamp DESC";
+    $sql = "SELECT id, event_name, event_description, user_id, event_timestamp FROM event_logs ORDER BY event_timestamp DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -57,7 +57,7 @@ $eventLogs = fetchEventLogs($pdo);
                 <th>ID</th>
                 <th>Event Name</th>
                 <th>Description</th>
-                <th>User</th>
+                <th>User ID</th>
                 <th>Timestamp</th>
             </tr>
         </thead>
@@ -67,7 +67,7 @@ $eventLogs = fetchEventLogs($pdo);
                     <td><?php echo htmlspecialchars($log['id']); ?></td>
                     <td><?php echo htmlspecialchars($log['event_name']); ?></td>
                     <td><?php echo htmlspecialchars($log['event_description']); ?></td>
-                    <td><?php echo htmlspecialchars($log['event_user']); ?></td>
+                    <td><?php echo htmlspecialchars($log['user_id']); ?></td>
                     <td><?php echo htmlspecialchars($log['event_timestamp']); ?></td>
                 </tr>
             <?php endforeach; ?>

@@ -74,6 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Execute the statement
             if ($stmt->execute()) {
+
+                require_once '../admin/EventLogger.php'; // Adjust path as per your file structure
+                $eventLogger = new EventLogger();
+                $eventLogger->logAppointmentEvent($userId, $date, $timeSlot, $doctorId, $patientId);
+
                 // Set the success message
                 $_SESSION['successMessage'] = "Appointment added successfully!";
                 // Redirect to the same page to avoid form resubmission

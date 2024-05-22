@@ -6,6 +6,7 @@ use PHPMailer\PHPMailer\Exception;
 require '../vendor/autoload.php';
 require '../session/db.php';
 require '../config/config.php';
+require '../admin/EventLogger.php';
     
 session_start();
 
@@ -62,6 +63,9 @@ if (isset($_POST["submit"])) {
             $_SESSION["username"] = $row["Email"];
             $_SESSION["first_name"] = $row["First Name"];
             $_SESSION["role"] = $row["Role"];
+
+            $eventLogger = new EventLogger();
+            $eventLogger->logLoginEvent($_SESSION["user_id"]);
 
             if ($row["OTP_used"] == 0) {
                 // Generate and send a new OTP
