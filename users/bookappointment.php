@@ -2,6 +2,7 @@
 
 require '../session/db.php';
 require_once '../session/session_manager.php';
+require_once '../admin/EventLogger.php'; 
 
 // Check connection
 if ($conn->connect_error) {
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Execute the statement
             if ($stmt->execute()) {
 
-                require_once '../admin/EventLogger.php'; // Adjust path as per your file structure
+            
                 $eventLogger = new EventLogger();
                 $eventLogger->logAppointmentEvent($userId, $date, $timeSlot, $doctorId, $patientId);
 
