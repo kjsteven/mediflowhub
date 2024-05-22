@@ -2,7 +2,12 @@
 
 require '../session/db.php';
 require_once '../session/session_manager.php';
-require_once '../admin/EventLogger.php'; 
+require '../admin/EventLogger.php'; 
+
+
+
+$eventLogger = new EventLogger();
+$eventLogger->logAppointmentEvent($userId, $date, $timeSlot, $doctorId, $patientId);
 
 // Check connection
 if ($conn->connect_error) {
@@ -75,8 +80,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Execute the statement
             if ($stmt->execute()) {
-
-        
 
                 // Set the success message
                 $_SESSION['successMessage'] = "Appointment added successfully!";
