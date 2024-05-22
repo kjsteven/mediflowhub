@@ -33,7 +33,7 @@ class EventLogger {
 
     public function logAppointmentCreation($userId, $appointmentId) {
         $eventName = "Appointment Creation";
-        $eventDescription = "User with ID $userId created appointment ID: $appointmentId";
+        $eventDescription = "User with ID $userId book an appointment";
         $this->logEvent($eventName, $eventDescription, $userId);
     }
 
