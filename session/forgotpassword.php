@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['resetEmail'] = $email;
     
         // Construct the reset password link
-        $resetLink = 'http://localhost/Capstone_PhpFiles/Capstone/session/resetpassword.php?resettoken=' . $resetToken;
+        $resetLink = 'https://mediflow.website/session/verify.php?token=' . $resetToken;
 
         // Email configuration
         $subject = 'Password Reset';
