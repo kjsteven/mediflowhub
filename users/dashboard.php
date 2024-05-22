@@ -118,6 +118,13 @@ $username = $_SESSION["username"];
                 </li>
 
                 <li>
+                    <a href="notifications.php">
+                        <i class='bx bxs-chat' ></i>
+                        <span>Chat Support</span>
+                    </a>
+                </li>
+
+                <li>
                     <a href="Profile.php">
                         <i class='bx bxs-cog' ></i>
                         <span>Settings</span>

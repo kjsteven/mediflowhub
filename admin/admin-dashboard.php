@@ -178,12 +178,7 @@ $totalAppointments = $rowAppointments['total_appointments'];
                 </a>
                 </li>
 
-
-
-
-
-                
-    
+            
 
                 <li class="logout">
                     <a href="logout.php" id="logout-link">
