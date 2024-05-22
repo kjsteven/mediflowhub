@@ -1,5 +1,8 @@
 <?php
-require '../admin/databaseconfig.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require '../config/databaseconfig.php';
 
 // Function to fetch error logs from the database
 function fetchErrorLogs($pdo) {
