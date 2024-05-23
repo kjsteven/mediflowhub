@@ -1,6 +1,7 @@
 <?php
 
 require_once '../session/session_manager.php';
+require_once '../admin/EventLogger.php'; 
 
 session_start(); // Start the session
 
@@ -10,6 +11,8 @@ if (isset($_SESSION['username'])) {
 
     // Include the database connection file
     require '../session/db.php';
+
+    $eventLogger = new EventLogger(); // Instantiate the EventLogger
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['confirm_account_changes'])) {
@@ -123,6 +126,8 @@ if (isset($_SESSION['username'])) {
                     $stmt = $conn->prepare("UPDATE users SET Password = ?, PasswordHistory = ? WHERE Email = ?");
                     $stmt->bind_param("sss", $hashed_password, $password_history_json, $_SESSION['username']);
                     $stmt->execute();
+
+                    $eventLogger->logPasswordChangeEvent($userID);
     
                     // Set success message and redirect
                     $_SESSION['successMessage'] = "Password changed successfully.";
@@ -189,6 +194,8 @@ if (isset($_SESSION['username'])) {
     
                 // Commit the transaction if everything is successful
                 $conn->commit();
+
+                $eventLogger->logAddressChangeEvent($userID, "Previous Address", "$barangay, $city, $province, $region"); // Provide actual old and new addresses
     
                 // Set success message and redirect
                 $_SESSION['successMessage'] = "Address changes saved successfully.";
