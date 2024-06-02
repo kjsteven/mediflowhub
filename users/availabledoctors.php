@@ -137,6 +137,13 @@ $conn->close();
                         </li>
 
                         <li>
+                   <a href="https://www.facebook.com/messages/t/61559867466389" target="_blank">
+                   <i class='bx bxs-chat'></i>
+                   <span>Chat Support</span>
+                   </a>
+                </li>
+
+                        <li>
                             <a href="Profile.php">
                                 <i class='bx bxs-cog' ></i>
                                 <span>Settings</span>

@@ -4,7 +4,7 @@ class EventLogger {
     private $pdo;
 
     public function __construct() {
-        require '../config/databaseconfig.php';
+        require_once '../config/databaseconfig.php';
 
         $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_DATABASE . ";charset=utf8";
         $options = [

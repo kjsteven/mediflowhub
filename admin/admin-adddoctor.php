@@ -362,6 +362,22 @@ $conn->close();
                     </a>
                 </li>
 
+                <li>
+                <a href="error.php">
+                    <i class='bx bxs-data'></i>
+                    <span>Error Logs</span>
+                </a>
+                </li>
+
+                <li>
+                <a href="eventlogs.php">
+                    <i class='bx bxs-data'></i>
+                    <span>User Logs</span>
+                </a>
+                </li>
+
+            
+
 
 
                 

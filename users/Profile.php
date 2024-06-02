@@ -69,7 +69,6 @@ if (isset($_SESSION['username'])) {
     
 
 
-    
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['confirm_password_changes'])) {
             $current_password = $_POST['current_password'];
@@ -79,56 +78,72 @@ if (isset($_SESSION['username'])) {
             // Validate and sanitize input data as needed
     
             // Check if the current password is correct
-            $stmt = $conn->prepare("SELECT Password, PasswordHistory FROM users WHERE Email = ?");
+            $stmt = $conn->prepare("SELECT Password FROM users WHERE Email = ?");
             $stmt->bind_param("s", $_SESSION['username']);
             $stmt->execute();
             $result = $stmt->get_result();
             $row = $result->fetch_assoc();
             $stored_password = $row['Password'];
-            $password_history = json_decode($row['PasswordHistory'], true);
     
             if (password_verify($current_password, $stored_password)) {
                 // Check if the new password and confirm password match
                 if ($new_password === $conf_password) {
-                    // Check password complexity
-                    if (strlen($new_password) < 12 || !preg_match('/[A-Za-z]/', $new_password) || !preg_match('/\d/', $new_password) || !preg_match('/[^A-Za-z0-9]/', $new_password)) {
-                        // Set error message for password complexity requirements not met and redirect
-                        $_SESSION['errorMessage'] = "Password must have a minimum of 12 characters containing letters, numbers, and special characters.";
-                        header("Location: Profile.php");
-                        exit;
-                    }
-    
-                    // Check if the password history exists and new password is in the history
-                    if ($password_history !== null && in_array($new_password, $password_history)) {
-                        // Set error message for using a previous password and redirect
-                        $_SESSION['errorMessage'] = "Cannot reuse a previous password.";
-                        header("Location: Profile.php");
-                        exit;
-                    }
-    
-                    // Update the password in the database
-                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-                    
-                    // Add hashed new password to history
-                    $hashed_new_password = password_hash($new_password, PASSWORD_DEFAULT); 
-                    if ($password_history === null) {
-                        $password_history = []; // Initialize password history if it's null
-                    }
-                    
-                    // Keep only the last 5 passwords
-                    if (count($password_history) >= 5) {
-                        array_shift($password_history);
-                    }
-                    
-                    $password_history[] = $hashed_new_password; 
-                    
-                    $password_history_json = json_encode($password_history);
-                    $stmt = $conn->prepare("UPDATE users SET Password = ?, PasswordHistory = ? WHERE Email = ?");
-                    $stmt->bind_param("sss", $hashed_password, $password_history_json, $_SESSION['username']);
+                    // Check if the new password matches any in the password history
+                    $stmt = $conn->prepare("
+                        SELECT hashed_password FROM password_history 
+                        WHERE user_id = ? 
+                    ");
+                    $stmt->bind_param("i", $userID);
                     $stmt->execute();
+                    $stmt->bind_result($hashedPasswordFromHistory);
+                    while ($stmt->fetch()) {
+                        if (password_verify($new_password, $hashedPasswordFromHistory)) {
+                            $stmt->close();
+                            $_SESSION['errorMessage'] = "You cannot use a previous password. Please choose a different password.";
+                            header("Location: Profile.php");
+                            exit();
+                        }
+                    }
+                    $stmt->close();
+
+                    // Hash the new password before storing it in the database
+                    $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+
+                    // Update the user's password in the database
+                    $stmt = $conn->prepare("UPDATE users SET Password = ? WHERE Email = ?");
+                    $stmt->bind_param("ss", $hashed_password, $_SESSION['username']);
+                    $stmt->execute();
+                    $stmt->close();
+
+                    // Maintain only the last 5 passwords in the password history
+                    $stmt = $conn->prepare("
+                        SELECT id FROM password_history 
+                        WHERE user_id = ? 
+                        ORDER BY created_at DESC LIMIT 5, 1
+                    ");
+                    $stmt->bind_param("i", $userID);
+                    $stmt->execute();
+                    $stmt->bind_result($oldestId);
+                    if ($stmt->fetch()) {
+                        $stmt->close();
+                        $stmt = $conn->prepare("DELETE FROM password_history WHERE id <= ?");
+                        $stmt->bind_param("i", $oldestId);
+                        $stmt->execute();
+                    } else {
+                        $stmt->close();
+                    }
+
+                    // Insert the new password into the password history
+                    $stmt = $conn->prepare("
+                        INSERT INTO password_history (user_id, hashed_password) 
+                        VALUES (?, ?)
+                    ");
+                    $stmt->bind_param("is", $userID, $hashed_password);
+                    $stmt->execute();
+                    $stmt->close();
 
                     $eventLogger->logPasswordChangeEvent($userID);
-    
+
                     // Set success message and redirect
                     $_SESSION['successMessage'] = "Password changed successfully.";
                     header("Location: Profile.php");
@@ -147,7 +162,7 @@ if (isset($_SESSION['username'])) {
             }
         }
     }
-    
+
 
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -357,6 +372,13 @@ if (isset($_SESSION['username'])) {
                                 <span>Notifications</span>
                             </a>
                         </li>
+
+                        <li>
+                   <a href="https://www.facebook.com/messages/t/61559867466389" target="_blank">
+                   <i class='bx bxs-chat'></i>
+                   <span>Chat Support</span>
+                   </a>
+                </li>
 
                         <li class="active">
                             <a href="Profile.php">

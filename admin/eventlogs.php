@@ -50,7 +50,7 @@ $eventLogs = fetchEventLogs($pdo);
     </style>
 </head>
 <body>
-    <h1>Event Logs</h1>
+    <h1>User Logs</h1>
     <table>
         <thead>
             <tr>

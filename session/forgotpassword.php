@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 
@@ -9,7 +10,10 @@ require '../session/db.php';
 require '../config/config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST["email"];
+ 
+    $token = $_POST["resettoken"]; // Change this line
+    $email = $_POST["email"]; 
+    
 
     // Check if the email exists in your database
     $stmt = $conn->prepare("SELECT * FROM users WHERE Email = ?");
@@ -32,14 +36,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Set the email in the session variable
         $_SESSION['resetEmail'] = $email;
     
-        // Construct the reset password link
-        $resetLink = 'https://mediflow.website/session/verify.php?token=' . $resetToken;
+        
+  
+    
 
-        // Email configuration
         $subject = 'Password Reset';
-        $body = 'Click the following link to reset your password: <a href="' . $resetLink . '">Reset Password</a>';
+        $body = 'Click the following link to reset your password: 
+    
 
-        // Sending email
+        
+
+       <a href="https://mediflow.website/session/resetpassword.php?resettoken=' . $token . '">Reset Password</a>';
+
+        // <a href="http://localhost/Capstone_PhpFiles/session/resetpassword.php?resettoken=' . $token . '">Reset Password</a>'; 
+       
         require '../vendor/phpmailer/phpmailer/src/PHPMailer.php';
         require '../vendor/phpmailer/phpmailer/src/SMTP.php';
         require '../vendor/phpmailer/phpmailer/src/Exception.php';
@@ -67,25 +77,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $mail->send();
 
-            // Set success status and redirect
-            $_SESSION['successMessage'] = 'Reset password link sent successfully.';
-            header("Location: forgotpassword.php");
+           // Set success status for JavaScript
+           $_SESSION['successMessage'] = 'Reset password link sent successfully.';
+           header("Location: forgotpassword.php");
             exit();
         } catch (Exception $e) {
-            // Set error status and redirect
+            // Set error status for JavaScript
             $_SESSION['errorMessage'] = 'Error sending the password reset link.';
             header("Location: forgotpassword.php");
             exit();
         }
     } else {
-        // Set error status and redirect
+        // Set error status for JavaScript
         $_SESSION['errorMessage'] = 'Email not found in the database.';
         header("Location: forgotpassword.php");
         exit();
     }
 }
 ?>
-
 
 
 <!DOCTYPE html>

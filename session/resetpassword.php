@@ -23,33 +23,80 @@ if (isset($_GET['resettoken'])) {
                 exit();
             }
 
-            // Hash the password before storing it in the database
+            // Check if the new password matches any in the password history
+            $stmt = $conn->prepare("
+                SELECT hashed_password FROM password_history 
+                WHERE user_id = (SELECT user_id FROM users WHERE Email = ?)
+            ");
+            $stmt->bind_param("s", $resetEmail);
+            $stmt->execute();
+            $stmt->bind_result($hashedPasswordFromHistory);
+            while ($stmt->fetch()) {
+                if (password_verify($password, $hashedPasswordFromHistory)) {
+                    $stmt->close();
+                    $_SESSION['errorMessage'] = "You cannot use a previous password. Please choose a different password.";
+                    header("Location: resetpassword.php?resettoken=$resetToken");
+                    exit();
+                }
+            }
+            $stmt->close();
+
+            // Hash the new password before storing it in the database
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-            // Update the user's password in the database
-            $stmt = $conn->prepare("UPDATE users SET Password = ? WHERE Email = ?");
-            $stmt->bind_param("ss", $hashedPassword, $resetEmail);
+            // Update the user's password and set the new password expiration date in the database
+            $passwordExpiration = date('Y-m-d', strtotime('+90 days'));
+            $stmt = $conn->prepare("UPDATE users SET Password = ?, Failed_Attempts = 0, Last_Failed_Attempt = NULL, password_expiration = ? WHERE Email = ?");
+            $stmt->bind_param("sss", $hashedPassword, $passwordExpiration, $resetEmail);
             $stmt->execute();
             $stmt->close();
 
-            // Set success message and redirect to a success page or login page
+            // Maintain only the last 5 passwords in the password history
+            $stmt = $conn->prepare("
+                SELECT id FROM password_history 
+                WHERE user_id = (SELECT user_id FROM users WHERE Email = ?) 
+                ORDER BY created_at DESC LIMIT 5, 1
+            ");
+            $stmt->bind_param("s", $resetEmail);
+            $stmt->execute();
+            $stmt->bind_result($oldestId);
+            if ($stmt->fetch()) {
+                $stmt->close();
+                $stmt = $conn->prepare("DELETE FROM password_history WHERE id <= ?");
+                $stmt->bind_param("i", $oldestId);
+                $stmt->execute();
+            } else {
+                $stmt->close();
+            }
+
+            // Insert the new password into the password history
+            $stmt = $conn->prepare("
+                INSERT INTO password_history (user_id, hashed_password) 
+                VALUES ((SELECT user_id FROM users WHERE Email = ?), ?)
+            ");
+            $stmt->bind_param("ss", $resetEmail, $hashedPassword);
+            $stmt->execute();
+            $stmt->close();
+
+            // Set session variables or cookies for successful password change if needed
             $_SESSION['successMessage'] = "Password reset successfully!";
             header("Location: resetpassword.php?resettoken=$resetToken");
             exit();
         }
     } else {
         // Email address not found in the session
-        $_SESSION['errorMessage'] = "Error: Email not found in session.";
-        header("Location: forgotpassword.php");
-        exit();
-    }
-} else {
-    // Reset token not provided
-    $_SESSION['errorMessage'] = "Error: Reset token not found.";
-    header("Location: forgotpassword.php");
-    exit();
-}
-?>
+              // Email address not found in the session
+              $_SESSION['errorMessage'] = "Error: Email not found in session.";
+              header("Location: forgotpassword.php");
+              exit();
+          }
+      } else {
+          // Reset token not provided
+          $_SESSION['errorMessage'] = "Error: Reset token not found.";
+          header("Location: forgotpassword.php");
+          exit();
+      }
+    ?>
 
 
 

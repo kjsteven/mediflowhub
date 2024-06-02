@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -17,6 +18,9 @@ if (isset($_POST["submit"])) {
     $password = $_POST["password"];
     $confpassword = $_POST["confirm-password"];
     $nowtime = date("Y-m-d");
+
+    // Set password expiration date to 90 days from now
+    $passwordExpiration = date("Y-m-d", strtotime("+90 days"));
 
     // Check if the checkbox is checked
     $agreeTerms = isset($_POST["agree-terms"]) && $_POST["agree-terms"] === "on";
@@ -65,12 +69,12 @@ if (isset($_POST["submit"])) {
         // Generate a unique token for email verification
         $token = md5($username);
 
-        // Insert user data into the database with the token
-        $query = "INSERT INTO users (`Last Name`, `First Name`, Email, password, `Phone Number`, `Role`, `Token`, `Date_Added`) VALUES (?, ?, ?, ?, ?, 'User', ?, '$nowtime')";
+        // Insert user data into the database with the token and password expiration date
+        $query = "INSERT INTO users (`Last Name`, `First Name`, Email, password, `Phone Number`, `Role`, `Token`, `Date_Added`, `password_expiration`) VALUES (?, ?, ?, ?, ?, 'User', ?, ?, ?)";
         $stmt = mysqli_prepare($conn, $query);
 
         // Bind the parameters
-        mysqli_stmt_bind_param($stmt, "ssssss", $last_name, $first_name, $username, $hashedPassword, $phonenumber, $token);
+        mysqli_stmt_bind_param($stmt, "ssssssss", $last_name, $first_name, $username, $hashedPassword, $phonenumber, $token, $nowtime, $passwordExpiration);
 
         // Execute the statement
         mysqli_stmt_execute($stmt);
@@ -79,7 +83,7 @@ if (isset($_POST["submit"])) {
         if (mysqli_stmt_affected_rows($stmt) > 0) {
             // Send verification email
             sendVerificationEmail($username, $token, $first_name);
-            $_SESSION['successMessage'] = "Registration Successful , A verification link has been sent to your email account";
+            $_SESSION['successMessage'] = "Registration Successful, A verification link has been sent to your email account";
             header("Location: signup.php");
             exit();
         } else {
@@ -96,7 +100,6 @@ if (isset($_POST["submit"])) {
         exit();
     }
 }
-
 
 
 function sendVerificationEmail($username, $token, $first_name)
@@ -118,6 +121,7 @@ function sendVerificationEmail($username, $token, $first_name)
   
 
     $verificationLink = 'https://mediflow.website/session/verify.php?token=' . $token;
+    // $verificationLink = 'https://localhost/Capstone_PhpFiles/session/verify.php?token=' . $token;
     $mail->Body = 'Hi' . " " . $first_name . ',' . "\n" . "\n" . 
     'We just need to verify your email address before you can access our website.' . "\n" .  "\n" . 
     'To verify your email, please click this link: (' . $verificationLink . ').' . "\n" .  "\n" . 

@@ -7,9 +7,8 @@ require '../vendor/autoload.php';
 require '../session/db.php';
 require '../config/config.php';
 require '../admin/EventLogger.php';
-    
-session_start();
 
+session_start();
 
 if (session_status() == PHP_SESSION_ACTIVE && isset($_SESSION["user_id"])) {
     if ($_SESSION["role"] == "Admin") {
@@ -20,10 +19,13 @@ if (session_status() == PHP_SESSION_ACTIVE && isset($_SESSION["user_id"])) {
     exit;
 }
 
-
 if (isset($_GET['timeout']) && $_GET['timeout'] === 'true') {
     echo "<script>alert('Session Timeout. Please login again.')</script>";
 }
+
+// Define lockout policy parameters
+$maxFailedAttempts = 5; // Maximum allowed failed attempts
+$lockoutDuration = 30 * 60; // Lockout duration in seconds (30 minutes)
 
 if (isset($_POST["submit"])) {
     $username = filter_var($_POST["username"], FILTER_VALIDATE_EMAIL);
@@ -34,21 +36,36 @@ if (isset($_POST["submit"])) {
         exit;
     }
 
+    // Check if user is locked out
+    $query = "SELECT Failed_Attempts, Last_Failed_Attempt, password_expiration FROM users WHERE Email = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $stmt->store_result();
+    $stmt->bind_result($failedAttempts, $lastFailedAttempt, $passwordExpiration);
+    $stmt->fetch();
+
+    // Check lockout conditions
+    if ($failedAttempts >= $maxFailedAttempts && strtotime($lastFailedAttempt) > (time() - $lockoutDuration)) {
+        echo "<script>alert('Account is locked for 30 minutes, due to multiple failed login attempts. Please change your password or try again later.')</script>";
+        exit;
+    }
+
+    // Proceed with login attempt
     $query = "SELECT * FROM users WHERE Email = ?";
-    $stmt = mysqli_prepare($conn, $query);
-    mysqli_stmt_bind_param($stmt, "s", $username);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if (!$result) {
-        error_log("Database query error: " . mysqli_error($conn));
+        error_log("Database query error: " . $conn->error);
         echo "<script>alert('An unexpected error occurred. Please try again.');</script>";
         exit;
     }
 
-    if (mysqli_num_rows($result) == 1) {
-        // User found, check the password
-        $row = mysqli_fetch_assoc($result);
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
 
         // Check if the user is activated
         if ($row["Activated"] == 0) {
@@ -58,12 +75,28 @@ if (isset($_POST["submit"])) {
 
         $hashedPassword = $row["Password"];
 
+        // Verify password
         if (password_verify($password, $hashedPassword)) {
+            // Check password expiration
+            $currentDate = date('Y-m-d');
+            if ($passwordExpiration < $currentDate) {
+                $_SESSION['errorMessage'] = "Your password has expired. Please reset your password.";
+                header("Location: ../session/resetpassword.php"); // Redirect to your password reset page
+                exit;
+            }
+
+            // Reset failed attempts on successful login
+            $query = "UPDATE users SET Failed_Attempts = 0, Last_Failed_Attempt = NULL WHERE Email = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+
             $_SESSION["user_id"] = $row["user_id"];
             $_SESSION["username"] = $row["Email"];
             $_SESSION["first_name"] = $row["First Name"];
             $_SESSION["role"] = $row["Role"];
 
+            // Log successful login
             $eventLogger = new EventLogger();
             $eventLogger->logLoginEvent($_SESSION["user_id"]);
 
@@ -72,12 +105,11 @@ if (isset($_POST["submit"])) {
                 $otp = mt_rand(100000, 999999);
                 $otpExpiration = date('Y-m-d H:i:s', strtotime('+1 month'));
 
-                // Send the OTP via email
+                // Send OTP via email
                 $mail = new PHPMailer(true);
                 try {
-                  
                     $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com';
+                    $mail->Host = SMTP_HOST;
                     $mail->SMTPAuth = true;
                     $mail->SMTPSecure = 'tls';
                     $mail->Port = 587;
@@ -95,12 +127,14 @@ if (isset($_POST["submit"])) {
                     $mail->send();
                     echo "<script>alert('OTP sent to your email.');</script>";
 
+                    // Update OTP and expiration in database
                     $lastInsertedUserId = $row["user_id"];
+                    $query = "UPDATE users SET OTP = ?, OTP_expiration = ? WHERE user_id = ?";
+                    $stmt = $conn->prepare($query);
+                    $stmt->bind_param("sss", $otp, $otpExpiration, $lastInsertedUserId);
+                    $stmt->execute();
 
-                    $query = "UPDATE users SET OTP = '$otp', OTP_expiration = '$otpExpiration' WHERE user_id = $lastInsertedUserId";
-                    mysqli_query($conn, $query);
-
-                    // Store the OTP in a cookie with a 1-month expiration
+                    // Store OTP in a cookie
                     setcookie("otp", $otp, time() + 30 * 24 * 60 * 60); // 1 month expiration
                     setcookie("otp_expiration", $otpExpiration, time() + 30 * 24 * 60 * 60);
 
@@ -110,6 +144,7 @@ if (isset($_POST["submit"])) {
                     echo "<script>alert('Error sending OTP. Please try again. Error: " . $e->getMessage() . "');</script>";
                 }
             } else {
+                // Redirect based on user role
                 if ($_SESSION["role"] == "Admin") {
                     header("Location: ../admin/admin-dashboard.php");
                 } else {
@@ -118,6 +153,13 @@ if (isset($_POST["submit"])) {
                 exit;
             }
         } else {
+            // Incorrect password: increment failed attempts and update last failed attempt timestamp
+            $failedAttempts = $failedAttempts + 1;
+            $query = "UPDATE users SET Failed_Attempts = ?, Last_Failed_Attempt = NOW() WHERE Email = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("ss", $failedAttempts, $username);
+            $stmt->execute();
+
             echo "<script>alert('Incorrect password.')</script>";
         }
     } else {
